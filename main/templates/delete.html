@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title> Delete Product</title>
+    <style>
+        button {
+            padding: 5px 10px;
+            margin: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1> Are you sure you want to delete the item {{ product.name }}? </h1>
+    <form method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="delete">
+        <button type="submit">Yes</button>
+    </form>
+    <form action="{% url 'sell_hub' %}" method="get">
+        <button type="no">No</button>
+    </form>
+</body>
+</html>

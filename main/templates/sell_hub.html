@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Selling Hub</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        td {
+            background-color: #fafafa;
+        }
+
+        button {
+            padding: 5px 10px;
+            margin: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Selling Options</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Product Name</th>
+                <th>Category</th>
+                <th>Price</th>
+                <th>Quantity</th>
+                <th>Description</th>
+                <th>Seller</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in products %}
+            <tr>
+                <td><strong>{{ product.1 }}</strong></td>
+                <td>{{ product.2 }}</td>
+                <td>${{ product.3|floatformat:2 }}</td>
+                <td>{{ product.4 }}</td>
+                <td>{{ product.5 }}</td>
+                <td>{{ product.6 }}</td>
+                <td>
+                    <form action="{% url 'edit' product.0 %}" method="get" style="display:inline;">
+                        <button type="submit">Edit</button>
+                    </form>
+                    <form action="{% url 'delete' product.0 %}" method="post" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" style="background-color: red; color: white;">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7">No products available.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <form action="{% url 'add' %}" method="get">
+        <button type="submit">Add item into market</button>
+    </form>
+    <form action="{% url 'main' %}" method="get">
+        <button type="submit">Back</button>
+    </form>
+</body>
+</html>

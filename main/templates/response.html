@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Action Response</title>
+    <style>
+        button {
+            padding: 5px 10px;
+            margin: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>{{ message }}</h1>
+    <form action="{% url 'main' %}" method="get">
+        <button type="submit">Back</button>
+    </form>
+</body>
+</html>

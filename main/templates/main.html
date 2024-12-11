@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Shopping Ground</title>
+    <style>
+        h1 {
+            text-align: center;
+            color: #5c6bc0;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 5px 10px;
+            margin: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Purdue Marketplace</h1>
+    {% if user.is_authenticated %}
+    <p>Welcome, {{ user.username }}!</p>
+    {% else %}
+    <p>You are not logged in.</p>
+    {% endif %}
+
+    <form action="{% url 'catalog' %}" method="get">
+        <button type="submit">View Catalog</button>
+    </form>
+    {% if user.is_authenticated %}
+        <form action="{% url 'sell_hub' %}" method="get">
+            <button type="submit">Selling Hub</button>
+        </form>
+    {% endif %}
+    <form action="{% url 'logout' %}" method="post">
+        {% csrf_token %}
+        {% if user.is_authenticated %}
+            <button type="submit" >Log Out</button>
+        {% else %}
+            <button type="submit">Sign In</button>
+        {% endif %}
+    </form>
+</body>
+</html>

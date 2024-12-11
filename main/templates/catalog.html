@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Catalog</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        td {
+            background-color: #fafafa;
+        }
+
+        label {
+            font-size: 14px;
+        }
+
+        button {
+            padding: 5px 10px;
+            margin: 5px;
+            cursor: pointer;
+        }
+
+        input[type="text"]{
+            width: 20%;
+            padding: 10px;
+            margin: 8px 0 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+
+        input[id="price"]{
+            width: 10%;
+            padding: 10px;
+            margin: 8px 0 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+
+        .user-info {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 16px;
+        }
+    </style>
+    {% load static %}
+    <script src="{% static 'js/catalog.js' %}"></script>
+</head>
+<body>
+    <h1>Products for Sale</h1>
+
+    <div class="user-info">
+        {% if user.is_authenticated %}
+        <p>User: {{ user.username }}</p>
+        {% else %}
+        <p>Guest</p>
+        {% endif %}
+    </div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Product Name</th>
+                <th>Category</th>
+                <th>Price</th>
+                <th>Quantity</th>
+                <th>Description</th>
+                <th>Seller</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in products %}
+                <tr>
+                    <td><strong>{{ product.1 }}</strong></td>
+                    <td>{{ product.2 }}</td>
+                    <td>${{ product.3|floatformat:2 }}</td>
+                    <td>{{ product.4 }}</td>
+                    <td>{{ product.5 }}</td>
+                    <td>{{ product.6 }}</td>
+                    <td>
+                        {% if product.7 == request.user.seller_id %}
+                            <form action="{% url 'edit' product.0 %}" method="get" style="display:inline;">
+                                <button type="submit">Edit</button>
+                            </form>
+                            <form action="{% url 'delete' product.0 %}" method="post" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit" style="background-color: red; color: white;">Delete</button>
+                            </form>
+                        {% else %}
+                            <form action="{% url 'buy' product.0 %}" method="get" style="display:inline;">
+                                <button type="submit">Buy</button>
+                            </form>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="7">No products available.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <form action="{% url 'search' %}" method="get">
+        <h2> Search Queries:</h2>
+        <p for="name">Product Name:</p>
+        <input type="text" id="inputText" name="name" value="{{ request.GET.name}}">
+
+        <p for="category">Product Category:</p>
+        <input type="text" id="inputText" name="item_category">
+
+        <p for="price">Price Range:</p>
+        <label for="min_price">Min Price: </label>
+        <input type="text" id="price" name="min_price" value="{{ request.GET.min_price}}">
+        
+        <label for="max_price">Max Price: </label>
+        <input type="text" id="price" name="max_price" value="{{ request.GET.max_price}}">
+
+        <p for="seller">Seller:</p>
+        <input type="text" id="inputText" name="seller" value="{{ request.GET.seller}}">
+
+        <br>
+        <button type="submit">Search Queries</button>
+
+        <button type="reset" style="background-color: red; color: white; onclick="window.location.href='{% url 'catalog' %}';">Reset</button>
+    </form>
+
+    <form action="{% url 'main' %}" method="get">
+        <button type="submit">Back</button>
+    </form>
+</body>
+</html>
