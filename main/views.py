@@ -10,6 +10,7 @@ from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
 from django.db import connection
 from .forms import UserForm
+from django.db import transaction
 
 def register(request):
     if request.method == 'POST':
@@ -31,15 +32,6 @@ def login(request):
         seller = authenticate(request, username=username, password=password)
         if seller is not None:
             auth_login(request, seller)
-            
-            UserSession.objects.filter(user=seller).delete()  # Delete old sessions
-
-            # Save the new session in the UserSession model
-            user_session = UserSession(
-                user=seller,
-                session_key=request.session.session_key  # Django assigns a session_key
-            )
-            user_session.save()
             
             return redirect('main')
         else:
@@ -67,13 +59,6 @@ def search(request):
     min_price = request.GET.get('min_price', '')
     max_price = request.GET.get('max_price', '')
     seller = request.GET.get('seller', '').strip()
-
-    # with connection.cursor() as cursor:
-    #     cursor.execute("""
-    #         SELECT p.product_id, p.name, p.category, p.price, p.quantity, p.description, s.username FROM main_product p
-    #         left join main_seller s on p.seller_id = s.seller_id
-    #     """)
-    #     categories = [row[0] for row in cursor.fetchall()]
     
     query = """
         SELECT p.product_id, p.name, p.category, p.price, p.quantity, p.description, s.username, s.seller_id FROM main_product p
@@ -112,9 +97,10 @@ def search(request):
 
     return render(request, 'catalog.html', {'products': products})
 
+@transaction.atomic
 def buy(request, pk):
     product = Product.objects.get(pk=pk)
-    
+        
     if request.method == 'POST':
         action_type = request.POST.get('action')
 
@@ -135,9 +121,10 @@ def buy(request, pk):
 def sell_hub(request):
     with connection.cursor() as cursor:
         cursor.execute("""
-            SELECT p.product_id, p.name, p.category, p.price, p.quantity, p.description, s.username, s.seller_id FROM main_product p
-            left join main_seller s on p.seller_id = s.seller_id
-            where s.seller_id = %s
+            SELECT p.product_id, p.name, p.category, p.price, p.quantity, p.description, s.username, s.seller_id 
+            FROM main_product p
+            LEFT JOIN main_seller s ON p.seller_id = s.seller_id
+            WHERE s.seller_id = %s
         """, [request.user.seller_id])
 
         products = cursor.fetchall()
@@ -192,7 +179,9 @@ def delete(request, **kwargs):
         action_type = request.POST.get('action')
 
         if action_type == 'delete':
+            # prepared statement
             with connection.cursor() as cursor:
+                cursor.execute('SET TRANSACTION ISOLATION LEVEL SERIALIZABLE')
                 cursor.execute("DELETE FROM main_product WHERE product_id = %s", [product_id])
 
             return redirect('catalog')
@@ -200,15 +189,8 @@ def delete(request, **kwargs):
     return render(request, 'delete.html', {'product': product})
 
 def logout_view(request):
-    if request.user.is_authenticated:
-        CustomSession.objects.filter(user=request.user, session_key=request.session.session_key).delete()
-
     logout(request)
     return redirect('login')
-
-# class AlbumUpdate(UpdateView):
-# 	model = Product
-# 	fields = []
 
 class UserFormView(View):
     form_class = UserForm

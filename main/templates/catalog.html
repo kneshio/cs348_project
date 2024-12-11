@@ -96,18 +96,20 @@
                     <td>{{ product.5 }}</td>
                     <td>{{ product.6 }}</td>
                     <td>
-                        {% if product.7 == request.user.seller_id %}
-                            <form action="{% url 'edit' product.0 %}" method="get" style="display:inline;">
-                                <button type="submit">Edit</button>
-                            </form>
-                            <form action="{% url 'delete' product.0 %}" method="post" style="display:inline;">
-                                {% csrf_token %}
-                                <button type="submit" style="background-color: red; color: white;">Delete</button>
-                            </form>
-                        {% else %}
-                            <form action="{% url 'buy' product.0 %}" method="get" style="display:inline;">
-                                <button type="submit">Buy</button>
-                            </form>
+                        {% if user.is_authenticated %}
+                            {% if product.7 == request.user.seller_id %}
+                                <form action="{% url 'edit' product.0 %}" method="get" style="display:inline;">
+                                    <button type="submit">Edit</button>
+                                </form>
+                                <form action="{% url 'delete' product.0 %}" method="post" style="display:inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" style="background-color: red; color: white;">Delete</button>
+                                </form>
+                            {% else %}
+                                <form action="{% url 'buy' product.0 %}" method="get" style="display:inline;">
+                                    <button type="submit">Buy</button>
+                                </form>
+                            {% endif %}
                         {% endif %}
                     </td>
                 </tr>
@@ -125,7 +127,7 @@
         <input type="text" id="inputText" name="name" value="{{ request.GET.name}}">
 
         <p for="category">Product Category:</p>
-        <input type="text" id="inputText" name="item_category">
+        <input type="text" id="inputText" name="category" value="{{ request.GET.category}}">
 
         <p for="price">Price Range:</p>
         <label for="min_price">Min Price: </label>
@@ -140,7 +142,8 @@
         <br>
         <button type="submit">Search Queries</button>
 
-        <button type="reset" style="background-color: red; color: white; onclick="window.location.href='{% url 'catalog' %}';">Reset</button>
+        <button type="button" style="background-color: red; color: white;"
+            onclick="window.location.href='{% url 'catalog' %}'">Reset</button>
     </form>
 
     <form action="{% url 'main' %}" method="get">
